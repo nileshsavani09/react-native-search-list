@@ -538,7 +538,7 @@ export default class SearchList extends Component {
         <View pointerEvents={'box-none'} style={{
           position: 'absolute',
           right: 0,
-          top: 0,
+          top: 15,
           bottom: Theme.size.toolbarHeight,
           flexDirection: 'column',
           justifyContent: 'center'
