@@ -26,6 +26,7 @@ import HighlightableText from "./components/HighlightableText";
 
 export default class SearchList extends Component {
   static propTypes = {
+    caseInsensitiveSearch: PropTypes.bool,
     data: PropTypes.array.isRequired,
     // use `renderRow` to get much more freedom
     rowHeight: PropTypes.number.isRequired,
@@ -84,7 +85,8 @@ export default class SearchList extends Component {
     rowHeight: Theme.size.rowHeight,
     sectionIndexTextColor: "#171a23",
     searchListBackgroundColor: Theme.color.primaryDark,
-    toolbarBackgroundColor: Theme.color.primaryDark
+    toolbarBackgroundColor: Theme.color.primaryDark,
+    caseInsensitiveSearch: false
   };
 
   constructor(props) {
@@ -186,6 +188,7 @@ export default class SearchList extends Component {
           searchResultWithSection,
           rowIds
         } = SearchService.sortResultList(tempResult, this.props.resultSortFunc);
+
         this.rowIds = rowIds;
         this.setState({
           isSearching: true,
@@ -193,7 +196,10 @@ export default class SearchList extends Component {
             {
               title: "",
               data: this.copiedSource.filter(i =>
-                i.searchStr.includes(this.searchStr)
+                this.props.caseInsensitiveSearch ?
+                  i.searchStr.toLowerCase().includes(this.searchStr.toLowerCase())
+                :
+                  i.searchStr.includes(this.searchStr)
               )
             }
           ],
