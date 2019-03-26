@@ -528,6 +528,7 @@ export default class SearchList extends Component {
                 this.props.renderSectionHeader ||
                 this._renderSectionHeader.bind(this)
               }
+              getItemLayout={this._getItemLayout.bind(this)}
               sections={this.state.sections}
               keyExtractor={(item, index) => `${item.id}_${index}`}
             />
