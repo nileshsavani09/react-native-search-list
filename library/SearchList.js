@@ -198,7 +198,7 @@ export default class SearchList extends Component {
               data: this.copiedSource.filter(i =>
                 this.props.caseInsensitiveSearch ?
                   i.searchStr.toLowerCase().includes(this.searchStr.toLowerCase())
-                :
+                  :
                   i.searchStr.includes(this.searchStr)
               )
             }
@@ -260,7 +260,7 @@ export default class SearchList extends Component {
           textAlign: "center",
           color: this.props.sectionIndexTextColor,
           fontSize: 14,
-          height: 20
+          height: 16
         }}
       >
         {sectionID}
@@ -421,9 +421,9 @@ export default class SearchList extends Component {
           animated: true,
           sectionIndex: index,
           itemIndex: 0,
-          viewPosition: 1
+          viewPosition: 0
         });
-      }, 500);
+      }, 100);
     }
 
     this.props.onScrollToSection && this.props.onScrollToSection(section);
@@ -527,9 +527,8 @@ export default class SearchList extends Component {
                 this.props.renderSectionHeader ||
                 this._renderSectionHeader.bind(this)
               }
-              getItemLayout={this._getItemLayout.bind(this)}
               sections={this.state.sections}
-              keyExtractor={(item, index) => item.searchStr + index}
+              keyExtractor={(item, index) => `${item.id}_${index}`}
             />
           );
         }

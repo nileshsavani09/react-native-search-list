@@ -60,3 +60,4 @@ buck-out/
 *.jsbundle
 
 ios/build/*
+.history/
