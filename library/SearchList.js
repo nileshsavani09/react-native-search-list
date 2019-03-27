@@ -11,7 +11,6 @@ import {
 } from "react-native";
 
 import React, { Component } from "react";
-import { OptimizedSectionList } from "react-native-optimized-flatlist";
 
 import { sTrim } from "./utils/utils";
 
@@ -521,7 +520,7 @@ export default class SearchList extends Component {
       if (data && data.length > 0) {
         if (this.props.useSectionsList) {
           return (
-            <OptimizedSectionList
+            <SectionList
               ref={ref => (this.searchSectionViewRef = ref)}
               renderItem={this.props.renderItem || this._renderItem.bind(this)}
               renderSectionHeader={
