@@ -530,6 +530,7 @@ export default class SearchList extends Component {
               getItemLayout={this._getItemLayout.bind(this)}
               sections={this.state.sections}
               keyExtractor={(item, index) => `${item.id}_${index}`}
+              initialNumToRender={110}
             />
           );
         }
