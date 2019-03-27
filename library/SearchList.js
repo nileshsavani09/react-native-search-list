@@ -531,6 +531,7 @@ export default class SearchList extends Component {
               sections={this.state.sections}
               keyExtractor={(item, index) => `${item.id}_${index}`}
               initialNumToRender={110}
+              maxToRenderPerBatch={100}
             />
           );
         }
