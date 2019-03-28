@@ -7,7 +7,8 @@ import {
   Animated,
   Image,
   Platform,
-  SectionList
+  SectionList,
+  FlatList
 } from "react-native";
 
 import React, { Component } from "react";
@@ -91,28 +92,11 @@ export default class SearchList extends Component {
 
   constructor(props) {
     super(props);
-    const listDataSource = new ListView.DataSource({
-      getSectionData: SearchList.getSectionData,
-      getRowData: SearchList.getRowData,
-      rowHasChanged: (row1, row2) => {
-        if (row1 !== row2) {
-          return true;
-        } else
-          return !!(
-            row1 &&
-            row2 &&
-            row1.matcher &&
-            row2.matcher &&
-            row1.matcher !== row1.matcher
-          );
-      },
-      sectionHeaderHasChanged: (s1, s2) => s1 !== s2
-    });
     this.state = {
       isSearching: false,
       animatedValue: new Animated.Value(0),
-      dataSource: listDataSource,
-      sections: []
+      sections: [],
+      stickyHeaderIndices: []
     };
 
     this.searchStr = "";
@@ -141,7 +125,17 @@ export default class SearchList extends Component {
   }
 
   initList(data = []) {
+    const stickyHeaderIndices = data
+      .map((item, i) => ({ i, header: item.header }))
+      .filter(item => item.header)
+      .map(item => item.i)
+
     this.copiedSource = Array.from(data);
+    this.setState({
+      stickyHeaderIndices,
+      data: this.copiedSource
+    })
+
     this.parseInitList(
       SearchService.sortList(
         SearchService.initList(this.copiedSource),
@@ -162,11 +156,7 @@ export default class SearchList extends Component {
         title: l,
         data: srcList.filter(i => i.orderIndex === l)
       })),
-      dataSource: this.state.dataSource.cloneWithRowsAndSections(
-        rowsWithSection,
-        !sectionIDs || sectionIDs.length === 0 ? [""] : sectionIDs,
-        rowIds
-      )
+      data: srcList
     });
   }
 
@@ -181,7 +171,6 @@ export default class SearchList extends Component {
       if (tempResult.length === 0) {
         this.setState({
           isSearching: true,
-          dataSource: this.state.dataSource.cloneWithRowsAndSections({}, [], [])
         });
       } else {
         const {
@@ -190,24 +179,21 @@ export default class SearchList extends Component {
         } = SearchService.sortResultList(tempResult, this.props.resultSortFunc);
 
         this.rowIds = rowIds;
+        const data = this.copiedSource.filter(i =>
+          this.props.caseInsensitiveSearch ?
+            i.searchStr.toLowerCase().includes(this.searchStr.toLowerCase())
+            :
+            i.searchStr.includes(this.searchStr)
+        )
         this.setState({
           isSearching: true,
           sections: [
             {
               title: "",
-              data: this.copiedSource.filter(i =>
-                this.props.caseInsensitiveSearch ?
-                  i.searchStr.toLowerCase().includes(this.searchStr.toLowerCase())
-                  :
-                  i.searchStr.includes(this.searchStr)
-              )
+              data
             }
           ],
-          dataSource: this.state.dataSource.cloneWithRowsAndSections(
-            searchResultWithSection,
-            [""],
-            rowIds
-          )
+          data
         });
       }
     } else {
@@ -400,7 +386,6 @@ export default class SearchList extends Component {
     let y = this.props.headerHeight || 0;
 
     let rowHeight = this.props.rowHeight;
-    let sectionHeaderHeight = this.props.sectionHeaderHeight;
     let index = this.sectionIDs.indexOf(section);
 
     let numcells = 0;
@@ -408,11 +393,10 @@ export default class SearchList extends Component {
       numcells += this.rowIds[i].length;
     }
 
-    sectionHeaderHeight = index * sectionHeaderHeight;
-    y += numcells * rowHeight + sectionHeaderHeight;
+    y += numcells * rowHeight;
 
     if (this.refs.searchListView) {
-      this.refs.searchListView.scrollTo({ x: 0, y: y, animated: false });
+      this.refs.searchListView.scrollToIndex({ index: numcells + index, viewOffset: 0, animated: true });
     }
 
     if (this.searchSectionViewRef) {
@@ -513,7 +497,7 @@ export default class SearchList extends Component {
     const { isSearching } = this.state;
     const { renderEmptyResult, renderEmpty, data } = this.props;
 
-    const isEmptyResult = this.state.dataSource.getRowCount() === 0;
+    const isEmptyResult = this.props.data.length === 0;
     if (isSearching && isEmptyResult && renderEmptyResult) {
       return renderEmptyResult(this.searchStr);
     } else {
@@ -536,30 +520,13 @@ export default class SearchList extends Component {
           );
         }
         return (
-          <ListView
-            initialListSize={15}
-            pageSize={10}
-            onEndReachedThreshold={30}
+          <FlatList
             ref="searchListView"
-            dataSource={this.state.dataSource}
-            keyboardDismissMode="on-drag"
-            keyboardShouldPersistTaps="always"
-            showsVerticalScrollIndicator
-            renderRow={this.props.renderRow || this._renderRow.bind(this)}
-            renderSeparator={
-              this.props.renderSeparator || this._renderSeparator.bind(this)
-            }
-            renderSectionHeader={
-              this.props.renderSectionHeader ||
-              this._renderSectionHeader.bind(this)
-            }
-            renderFooter={
-              this.props.renderFooter || this._renderFooter.bind(this)
-            }
-            renderHeader={
-              this.props.renderHeader || this._renderHeader.bind(this)
-            }
-            enableEmptySections
+            data={this.state.data}
+            keyExtractor={(item, index) => `${index}`}
+            renderItem={this.props.renderItem || this.renderItem.bind(this)}
+            removeClippedSubviews={false}
+            stickyHeaderIndices={this.state.stickyHeaderIndices}
           />
         );
       } else {
