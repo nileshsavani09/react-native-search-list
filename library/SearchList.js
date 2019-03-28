@@ -489,6 +489,20 @@ export default class SearchList extends Component {
     };
   }
 
+  _getItemLayoutFlat(data, index) {
+    const height = (data.header ? 24 : this.props.rowHeight) || 0;
+    const offset = Array.from(this.copiedSource)
+      .slice(0, index)
+      .reduce((prev, curr, index, array) => {
+        return prev += curr.header ? 24 : this.props.rowHeight
+      }, 0)
+    return {
+      length: height,
+      offset,
+      index
+    };
+  }
+
   /**
    * render the main list view
    * @returns {*}
@@ -527,7 +541,10 @@ export default class SearchList extends Component {
             keyExtractor={(item, index) => `${index}`}
             renderItem={this.props.renderItem || this.renderItem.bind(this)}
             removeClippedSubviews={false}
+            getItemLayout={this._getItemLayoutFlat.bind(this)}
             stickyHeaderIndices={this.state.stickyHeaderIndices}
+            onScrollToIndexFailed={() => null}
+
           />
         );
       } else {
