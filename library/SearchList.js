@@ -394,9 +394,10 @@ export default class SearchList extends Component {
     }
 
     y += numcells * rowHeight;
+    const item = this.state.data.find(item => item.name === section)
 
     if (this.refs.searchListView) {
-      this.refs.searchListView.scrollToIndex({ index: numcells + index, viewOffset: 0, animated: true });
+      this.refs.searchListView.scrollToItem({ item, animated: true });
     }
 
     if (this.searchSectionViewRef) {
